@@ -1,0 +1,107 @@
+body {
+  width: 320px;
+  margin: 0;
+  padding: 12px;
+  font: 13px/1.4 system-ui, sans-serif;
+  background: #fff;
+  color: #1a1a1a;
+}
+@media (prefers-color-scheme: dark) {
+  body {
+    background: #2b2a33;
+    color: #fbfbfe;
+  }
+  button, select {
+    background: #42414d;
+    color: #fbfbfe;
+    border-color: #5b5b66;
+  }
+  code {
+    background: #1c1b22;
+  }
+}
+.muted {
+  opacity: 0.7;
+  font-size: 12px;
+}
+.mono {
+  font-family: ui-monospace, monospace;
+  min-width: 3.5em;
+  text-align: right;
+}
+#title {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 4px;
+}
+#preview {
+  min-height: 2.6em;
+  font-style: italic;
+  opacity: 0.9;
+  margin-bottom: 8px;
+}
+#transport {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin: 8px 0;
+}
+#transport button {
+  font-size: 18px;
+  width: 52px;
+  height: 40px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  cursor: pointer;
+}
+#playpause {
+  width: 68px !important;
+}
+.row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+.row span:first-child {
+  min-width: 42px;
+}
+.row input[type="range"] {
+  flex: 1;
+}
+.row select {
+  flex: 1;
+}
+#status {
+  text-align: center;
+  margin-bottom: 4px;
+}
+#error {
+  margin-top: 8px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: rgba(255, 80, 80, 0.15);
+  color: #c0392b;
+}
+.err-title {
+  font-weight: 600;
+  margin: 0 0 6px;
+}
+code {
+  display: block;
+  padding: 6px 8px;
+  margin: 6px 0 10px;
+  background: #f0f0f4;
+  border-radius: 6px;
+  font-family: ui-monospace, monospace;
+  font-size: 11px;
+  user-select: all;
+  word-break: break-all;
+}
+#retry {
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  cursor: pointer;
+}

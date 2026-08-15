@@ -1,0 +1,30 @@
+{
+  "manifest_version": 2,
+  "name": "Local Reader TTS",
+  "version": "0.1.0",
+  "description": "Read articles aloud with a high-quality local neural TTS server (mlx-audio on Apple Silicon).",
+  "permissions": [
+    "activeTab",
+    "tabs",
+    "storage",
+    "http://127.0.0.1/*"
+  ],
+  "background": {
+    "page": "background/background.html",
+    "persistent": true
+  },
+  "browser_action": {
+    "default_title": "Read aloud",
+    "default_popup": "popup/popup.html",
+    "default_icon": {
+      "48": "icons/icon-48.png",
+      "96": "icons/icon-96.png"
+    }
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "local-reader-tts@daniel.local",
+      "strict_min_version": "140.0"
+    }
+  }
+}
