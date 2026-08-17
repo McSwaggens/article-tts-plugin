@@ -1,19 +1,24 @@
 # Local Reader TTS
 
-Read articles aloud in Firefox with a high-quality **local** neural TTS model —
-no cloud, no built-in-browser-voice sound. Two halves:
+Read articles aloud in Firefox with a high-quality **local** neural TTS model.
+No cloud, no accounts, no robotic built-in browser voices — synthesis runs
+entirely on your own machine.
 
 - **`server/`** — a small FastAPI service on `127.0.0.1:8765` that runs
   [Qwen3-TTS-1.7B](https://huggingface.co/Qwen/Qwen3-TTS-12Hz-1.7B-CustomVoice)
   (best prosody) and [Kokoro-82M](https://huggingface.co/hexgrad/Kokoro-82M)
   (near-instant) on Apple Silicon via [mlx-audio](https://github.com/Blaizzy/mlx-audio).
-- **`extension/`** — an MV2 Firefox extension that extracts the article with
+- **`extension/`** — a Firefox extension that extracts the article with
   Mozilla's Readability.js (the same library Reader View uses), streams
-  per-sentence audio from the server, highlights the sentence being read, and
-  gives you play/pause, skip, speed, and a voice picker.
+  per-sentence audio from the server with prefetch, highlights the sentence
+  being read, and gives you play/pause, sentence skip, speed control, and a
+  voice picker. Audio keeps playing while you browse other tabs.
 
-Firefox blocks extensions from `about:reader` pages, so use the extension on the
-**normal** page — it does its own reader-mode extraction.
+## Requirements
+
+- macOS on Apple Silicon (M-series)
+- [uv](https://docs.astral.sh/uv/) (`brew install uv`)
+- Firefox 140+
 
 ## Run the server
 
@@ -23,38 +28,45 @@ uv --directory server run tts-server
 
 `uv` fetches Python 3.12 and all dependencies on first run. Model weights
 download from Hugging Face to `~/.cache/huggingface` on first use
-(Qwen3 ≈ 4 GB, Kokoro ≈ 0.3 GB); after that everything is offline.
+(Qwen3 ≈ 4 GB, Kokoro ≈ 0.3 GB); after that everything works offline.
 
 ### Auto-start at login (optional)
 
 ```sh
-cp server/launchd/com.daniel.tts-server.plist ~/Library/LaunchAgents/
-launchctl load ~/Library/LaunchAgents/com.daniel.tts-server.plist
+server/launchd/install-launchd.sh
 ```
 
-Logs go to `~/Library/Logs/tts-server.log`.
+Installs and loads a LaunchAgent; logs go to `~/Library/Logs/tts-server.log`.
 
-## Load the extension
+## Install the extension
 
-1. Open `about:debugging#/runtime/this-firefox`
-2. **Load Temporary Add-on…** → pick `extension/manifest.json`
-3. Open an article, click the toolbar speaker icon, press ▶
+**Quick (temporary):** open `about:debugging#/runtime/this-firefox` →
+**Load Temporary Add-on…** → pick `extension/manifest.json`. Temporary add-ons
+disappear when Firefox quits.
 
-Temporary add-ons disappear when Firefox quits — re-load after a restart.
-(For a permanent install you'd need Firefox Developer Edition with
-`xpinstall.signatures.required=false`, or an AMO-signed build.)
+**Permanent:** release Firefox only permanently installs Mozilla-signed
+extensions. Build the package with `scripts/package.sh`, upload the zip at
+[addons.mozilla.org](https://addons.mozilla.org/developers/) under
+**"On your own"** (unlisted self-distribution — nothing is published), download
+the signed `.xpi`, and drag it into Firefox. Signed `.xpi`s may also be
+attached to this repo's Releases.
 
-## Usage notes
+## Usage
 
-- **Voice picker**: Qwen3 voices (best quality — `aiden` is the default; some
-  voices are accent-flavored) and Kokoro voices (fastest, deterministic).
-  Switching models warms the new model in the background.
-- **Speed**: Kokoro renders speed natively (pitch stays natural); Qwen3 uses
+Open an article, click the toolbar speaker icon, press ▶.
+
+- Use the extension on the **normal** page, not in Reader View — Firefox
+  blocks all extensions inside `about:reader`, so this extension does its own
+  reader-style extraction instead.
+- **Voices**: Qwen3 voices have the best prosody (`aiden` is the default;
+  several are accent-flavored). Kokoro voices synthesize ~40x real-time and
+  are fully deterministic.
+- **Speed**: Kokoro renders speed natively (pitch preserved); Qwen3 uses
   playback-rate adjustment (slight pitch shift at high speeds).
-- Audio keeps playing while you browse other tabs. Starting a read on another
-  tab stops the current one.
-- If a single sentence fails to synthesize it is retried once, then skipped —
-  a bad sentence won't kill a long article.
+- A sentence that fails to synthesize is retried once, then skipped — one bad
+  sentence won't kill a long article.
+- First Qwen3 sentence takes a few seconds while the model loads; after that
+  generation stays ahead of playback.
 
 ## Server API
 
@@ -76,10 +88,14 @@ curl -sf -X POST http://127.0.0.1:8765/speak \
 
 ## Troubleshooting
 
-- **Popup says "TTS server is not running"** — start it with the command above,
-  then hit Retry.
-- **First Qwen3 sentence takes ~10 s** — one-time model load (longer if weights
-  are still downloading); the popup shows "Loading model…". Use Kokoro if you
-  want instant starts, or `curl -X POST localhost:8765/warmup -d '{"model":"qwen3"}' -H 'Content-Type: application/json'` after boot.
+- **Popup says "TTS server is not running"** — start it with the command
+  above, then hit Retry.
+- **"Firefox blocks extensions in Reader View"** — exit Reader View (the X in
+  the page's left toolbar) and press play on the normal page.
 - **"Couldn't find an article on this page"** — the page didn't pass
   Readability's article detection (dashboards, web apps, index pages).
+
+## License
+
+MIT (see [LICENSE](LICENSE)). Vendored Readability.js is Apache 2.0 from
+[mozilla/readability](https://github.com/mozilla/readability).
